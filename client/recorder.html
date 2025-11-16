@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Recorder - Client</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 30px;
+        }
+        
+        .config-section {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 5px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-danger:hover:not(:disabled) {
+            background: #dc2626;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .status-label {
+            color: #64748b;
+        }
+        
+        .status-value {
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .status-value.recording {
+            color: #ef4444;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .transcript-section {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .transcript-section h3 {
+            color: #1e293b;
+            margin-bottom: 15px;
+        }
+        
+        .transcript-text {
+            color: #475569;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: #94a3b8;
+            padding: 40px 20px;
+        }
+        
+        .summary-box {
+            background: #ede9fe;
+            border-left: 4px solid #8b5cf6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .summary-box h4 {
+            color: #6d28d9;
+            margin-bottom: 10px;
+        }
+        
+        .summary-text {
+            color: #4c1d95;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎙️ Meeting Recorder</h1>
+        <p class="subtitle">Browser-based audio recording client</p>
+        
+        <div class="config-section">
+            <div class="form-group">
+                <label for="server-url">Raspberry Pi Server URL:</label>
+                <input type="text" id="server-url" placeholder="http://192.168.1.100:8000" value="http://localhost:8000">
+            </div>
+            
+            <div class="form-group">
+                <label for="session-id">Session ID:</label>
+                <input type="text" id="session-id" placeholder="meeting_2025_01_15" value="">
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="start-btn" class="btn-primary">Start Recording</button>
+            <button id="stop-btn" class="btn-danger" disabled>Stop Recording</button>
+        </div>
+        
+        <div class="status">
+            <div class="status-item">
+                <span class="status-label">Status:</span>
+                <span class="status-value" id="status">Ready</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Chunks Sent:</span>
+                <span class="status-value" id="chunks-sent">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Duration:</span>
+                <span class="status-value" id="duration">00:00</span>
+            </div>
+        </div>
+        
+        <div class="transcript-section">
+            <h3>Live Transcript</h3>
+            <div id="transcript" class="transcript-text">
+                <div class="empty-state">Transcript will appear here...</div>
+            </div>
+            
+            <div id="summary-container"></div>
+        </div>
+    </div>
+
+    <script>
+        class MeetingRecorder {
+            constructor() {
+                this.mediaRecorder = null;
+                this.audioStream = null;
+                this.ws = null;
+                this.isRecording = false;
+                this.chunkCount = 0;
+                this.startTime = null;
+                this.durationInterval = null;
+                
+                // DOM elements
+                this.serverUrlInput = document.getElementById('server-url');
+                this.sessionIdInput = document.getElementById('session-id');
+                this.startBtn = document.getElementById('start-btn');
+                this.stopBtn = document.getElementById('stop-btn');
+                this.statusEl = document.getElementById('status');
+                this.chunksSentEl = document.getElementById('chunks-sent');
+                this.durationEl = document.getElementById('duration');
+                this.transcriptEl = document.getElementById('transcript');
+                this.summaryContainer = document.getElementById('summary-container');
+                
+                // Event listeners
+                this.startBtn.addEventListener('click', () => this.startRecording());
+                this.stopBtn.addEventListener('click', () => this.stopRecording());
+                
+                // Load saved settings
+                this.loadSettings();
+                
+                // Generate default session ID
+                if (!this.sessionIdInput.value) {
+                    const now = new Date();
+                    const sessionId = `session_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+                    this.sessionIdInput.value = sessionId;
+                }
+            }
+            
+            loadSettings() {
+                const savedUrl = localStorage.getItem('server_url');
+                if (savedUrl) this.serverUrlInput.value = savedUrl;
+            }
+            
+            saveSettings() {
+                localStorage.setItem('server_url', this.serverUrlInput.value);
+            }
+            
+            async startRecording() {
+                try {
+                    const serverUrl = this.serverUrlInput.value.trim();
+                    const sessionId = this.sessionIdInput.value.trim();
+                    
+                    if (!serverUrl || !sessionId) {
+                        alert('Please enter server URL and session ID');
+                        return;
+                    }
+                    
+                    this.saveSettings();
+                    this.updateStatus('Requesting microphone...');
+                    
+                    // Get microphone access
+                    this.audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    
+                    // Create session
+                    await this.createSession(serverUrl, sessionId);
+                    
+                    // Connect WebSocket
+                    await this.connectWebSocket(serverUrl);
+                    
+                    // Setup MediaRecorder
+                    this.mediaRecorder = new MediaRecorder(this.audioStream, {
+                        mimeType: 'audio/webm;codecs=opus'
+                    });
+                    
+                    this.mediaRecorder.ondataavailable = async (e) => {
+                        if (e.data.size > 0) {
+                            await this.uploadChunk(serverUrl, sessionId, e.data);
+                        }
+                    };
+                    
+                    // Record in 3-second chunks
+                    this.mediaRecorder.start(3000);
+                    
+                    this.isRecording = true;
+                    this.startTime = Date.now();
+                    this.chunkCount = 0;
+                    
+                    // Update UI
+                    this.startBtn.disabled = true;
+                    this.stopBtn.disabled = false;
+                    this.serverUrlInput.disabled = true;
+                    this.sessionIdInput.disabled = true;
+                    this.updateStatus('Recording...', true);
+                    
+                    // Start duration counter
+                    this.durationInterval = setInterval(() => this.updateDuration(), 1000);
+                    
+                    console.log('✓ Recording started');
+                    
+                } catch (error) {
+                    console.error('Start error:', error);
+                    this.updateStatus('Error: ' + error.message);
+                    alert('Failed to start recording: ' + error.message);
+                }
+            }
+            
+            async stopRecording() {
+                try {
+                    this.updateStatus('Stopping...');
+                    
+                    // Stop recording
+                    if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+                        this.mediaRecorder.stop();
+                    }
+                    
+                    // Stop audio stream
+                    if (this.audioStream) {
+                        this.audioStream.getTracks().forEach(track => track.stop());
+                    }
+                    
+                    // End session
+                    const serverUrl = this.serverUrlInput.value.trim();
+                    const sessionId = this.sessionIdInput.value.trim();
+                    await this.endSession(serverUrl, sessionId);
+                    
+                    // Close WebSocket
+                    if (this.ws) {
+                        this.ws.close();
+                    }
+                    
+                    // Clear duration counter
+                    if (this.durationInterval) {
+                        clearInterval(this.durationInterval);
+                    }
+                    
+                    this.isRecording = false;
+                    
+                    // Update UI
+                    this.startBtn.disabled = false;
+                    this.stopBtn.disabled = true;
+                    this.serverUrlInput.disabled = false;
+                    this.sessionIdInput.disabled = false;
+                    this.updateStatus('Stopped');
+                    
+                    console.log('✓ Recording stopped');
+                    
+                } catch (error) {
+                    console.error('Stop error:', error);
+                    this.updateStatus('Error: ' + error.message);
+                }
+            }
+            
+            async createSession(serverUrl, sessionId) {
+                const formData = new FormData();
+                formData.append('session_id', sessionId);
+                
+                const response = await fetch(`${serverUrl}/session/create`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to create session');
+                }
+                
+                console.log('✓ Session created');
+            }
+            
+            async uploadChunk(serverUrl, sessionId, blob) {
+                try {
+                    const formData = new FormData();
+                    formData.append('seq', this.chunkCount);
+                    formData.append('timestamp', Date.now() / 1000);
+                    formData.append('chunk', blob, 'audio.webm');
+                    
+                    const response = await fetch(`${serverUrl}/session/${sessionId}/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (response.ok) {
+                        this.chunkCount++;
+                        this.chunksSentEl.textContent = this.chunkCount;
+                        console.log(`✓ Chunk ${this.chunkCount} uploaded`);
+                    } else {
+                        console.error('Upload failed:', await response.text());
+                    }
+                    
+                } catch (error) {
+                    console.error('Upload error:', error);
+                }
+            }
+            
+            async endSession(serverUrl, sessionId) {
+                const response = await fetch(`${serverUrl}/session/${sessionId}/end`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    console.log('✓ Session ended');
+                }
+            }
+            
+            async connectWebSocket(serverUrl) {
+                const wsUrl = serverUrl.replace('http://', 'ws://').replace('https://', 'wss://');
+                
+                this.ws = new WebSocket(`${wsUrl}/ws`);
+                
+                this.ws.onopen = () => {
+                    console.log('✓ WebSocket connected');
+                };
+                
+                this.ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        this.handleWebSocketMessage(data);
+                    } catch (error) {
+                        console.error('WebSocket message error:', error);
+                    }
+                };
+                
+                this.ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                };
+                
+                this.ws.onclose = () => {
+                    console.log('✓ WebSocket closed');
+                };
+            }
+            
+            handleWebSocketMessage(data) {
+                console.log('WebSocket message:', data);
+                
+                if (data.type === 'transcript_update') {
+                    this.updateTranscript(data.full_transcript || data.text);
+                } else if (data.type === 'summary') {
+                    this.updateSummary(data.summary);
+                } else if (data.type === 'session_ended') {
+                    this.updateTranscript(data.transcript);
+                    this.updateSummary(data.summary);
+                }
+            }
+            
+            updateTranscript(text) {
+                if (!text) return;
+                
+                this.transcriptEl.innerHTML = text;
+            }
+            
+            updateSummary(summary) {
+                if (!summary) return;
+                
+                this.summaryContainer.innerHTML = `
+                    <div class="summary-box">
+                        <h4>📝 Summary</h4>
+                        <div class="summary-text">${summary}</div>
+                    </div>
+                `;
+            }
+            
+            updateStatus(text, isRecording = false) {
+                this.statusEl.textContent = text;
+                this.statusEl.classList.toggle('recording', isRecording);
+            }
+            
+            updateDuration() {
+                if (!this.startTime) return;
+                
+                const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                
+                this.durationEl.textContent = 
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+        }
+        
+        // Initialize
+        const recorder = new MeetingRecorder();
+    </script>
+</body>
+</html>

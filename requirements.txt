@@ -1,0 +1,19 @@
+# Web Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+websockets==12.0
+
+# Speech-to-Text
+vosk==0.3.45
+
+# Summarization (LexRank - Pi optimized)
+sumy==0.11.0
+nltk==3.8.1
+
+# Audio Processing
+ffmpeg-python==0.2.0
+
+# Utilities
+aiofiles==23.2.1
+python-dateutil==2.8.2
