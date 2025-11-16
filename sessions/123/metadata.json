@@ -1,0 +1,19 @@
+{
+  "id": "123",
+  "created_at": "2025-11-16T18:49:06.540587",
+  "status": "ended",
+  "chunks_received": 7,
+  "transcript": "",
+  "summary": "",
+  "expected_seq": 1,
+  "buffered_chunks": {
+    "2": "/home/admin/iot2/sessions/123/chunks/chunk_00002.webm",
+    "3": "/home/admin/iot2/sessions/123/chunks/chunk_00003.webm",
+    "4": "/home/admin/iot2/sessions/123/chunks/chunk_00004.webm",
+    "5": "/home/admin/iot2/sessions/123/chunks/chunk_00005.webm",
+    "6": "/home/admin/iot2/sessions/123/chunks/chunk_00006.webm"
+  },
+  "last_summary_time": 1763299146.540604,
+  "word_count": 0,
+  "ended_at": "2025-11-16T18:49:28.137396"
+}
