@@ -36,7 +36,7 @@ sudo apt install -y \
     curl
 
 # Create project directory
-PROJECT_DIR="$HOME/meeting-recorder"
+PROJECT_DIR="/home/admin/iot2"
 echo "📁 Creating project directory at $PROJECT_DIR..."
 mkdir -p "$PROJECT_DIR"
 cd "$PROJECT_DIR"

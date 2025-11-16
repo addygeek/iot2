@@ -10,7 +10,7 @@ MODELS_DIR = BASE_DIR / "models"
 SESSIONS_DIR = BASE_DIR / "sessions"
 
 # Vosk configuration
-VOSK_MODEL_PATH = MODELS_DIR / "vosk-model-en-in-0.5"
+VOSK_MODEL_PATH = Path.home() / "vosk-model-small-en-us-0.15"
 VOSK_SAMPLE_RATE = 16000
 
 # Server configuration

@@ -1,0 +1,12 @@
+{
+  "id": "session_20251116_184658",
+  "created_at": "2025-11-16T18:47:07.124325",
+  "status": "active",
+  "chunks_received": 0,
+  "transcript": "",
+  "summary": "",
+  "expected_seq": 0,
+  "buffered_chunks": {},
+  "last_summary_time": 1763299027.124344,
+  "word_count": 0
+}
